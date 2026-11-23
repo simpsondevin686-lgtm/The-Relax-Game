@@ -891,6 +891,7 @@ function regen(q,keepPos){
   runToggle=false;syncRunBtn();
   {const cx=P.x,cz=P.z;let placed=false;for(let rr=6;rr<=80&&!placed;rr+=2){for(let k=0;k<32;k++){const a=k*(6.2832/32);const x=cx+Math.cos(a)*rr,z=cz+Math.sin(a)*rr;if(H(x,z)<-1.2){boat.root.position.set(x,0,z);boat.heading=Math.atan2(cx-x,cz-z);placed=true;break}}}if(!placed){const dir=Math.atan2(P.x-cx,P.z-cz);boat.root.position.set(cx+Math.sin(dir)*20,0,cz+Math.cos(dir)*20)}boat.root.rotation.y=boat.heading}
   spawnAllPads();
+  spawnShip();
 }
 const MUSIC="Bloxiest Licka.mp3",MUSIC_VOLUME=.2;
 let musicEl=null;
@@ -1655,6 +1656,17 @@ let koGrace=0;function knockMe(by,vx,vz){if(myKo>0||performance.now()<koGrace)re
  if(held){const u=held.u;u.held=false;u.rest=false;u.thrownBy=null;u.v.set(0,.1,0);if(rm)rm.emit('thr',{i:u.idx,p:held.position.toArray().map(x=>+x.toFixed(2)),v:[0,.1,0]});held=null;$('gb').textContent='Grab'}
  if(dragging)stopDrag();const l=Math.hypot(vx,vz)||1;P.v.x+=vx/l*6;P.v.z+=vz/l*6;P.v.y=Math.max(P.v.y,5);
  if(rm)rm.emit('hit',{by});addMsg('·','You were knocked over by '+nameOf(by)+'!',.02)}
+let ship=null;
+function spawnShip(){
+  if(ship)scene.remove(ship.root);
+  let sx=P.x+8,sz=P.z+8;
+  for(let r=4;r<=24;r+=4){let placed=false;for(let a=0;a<6.28;a+=0.78){const x=P.x+Math.cos(a)*r,z=P.z+Math.sin(a)*r;if(H(x,z)>.5){sx=x;sz=z;placed=true;break}}if(placed)break}
+  const g=new T.Group();g.position.set(sx,H(sx,sz)+1.5,sz);
+  const body=new T.Mesh(new T.CylinderGeometry(.6,.8,2.5,8),new T.MeshLambertMaterial({color:0xeeeeee}));body.castShadow=true;
+  const nose=new T.Mesh(new T.ConeGeometry(.6,1.2,8),new T.MeshLambertMaterial({color:0xff3333}));nose.position.y=1.85;nose.castShadow=true;
+  const glow=new T.Mesh(new T.CylinderGeometry(.4,.4,.2,8),new T.MeshBasicMaterial({color:0x66ddff}));glow.position.y=-1.35;
+  g.add(body,nose,glow);scene.add(g);ship={root:g,body,nose,glow,inShip:false,speed:0,heading:0};
+}
 function spawnAllPads(){
   padReady=true;
   for(const c of pool)if(c.cx!==1e9)trySpawnPad(c.cx*CS,c.cz*CS);
